@@ -4,7 +4,10 @@
 \alias{Parallelinit}
 \title{Parallel computing initialization preparation}
 \usage{
-Parallelinit()
+Parallelinit(mymodel)
+}
+\arguments{
+\item{mymodel}{: The models were selected, including QRF,RF and MLR.}
 }
 \value{
 Represents whether the loading of the required variables and dependent packages is complete
@@ -14,6 +17,6 @@ Parallel computing initialization preparation
 }
 \examples{
 \donttest{
-Parallelinit()
+Parallelinit(mymodel = "QRF")
 }
 }

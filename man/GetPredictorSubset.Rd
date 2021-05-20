@@ -8,11 +8,13 @@ GetPredictorSubset(
   predictor.name,
   iblock,
   nblock,
-  foldername,
+  fn,
   nr,
   nc,
   resolutions,
-  pro
+  pro,
+  from,
+  to
 )
 }
 \arguments{
@@ -22,7 +24,7 @@ GetPredictorSubset(
 
 \item{nblock}{: number of target blocks (integer)}
 
-\item{foldername}{: The passed value of a global variable}
+\item{fn}{: The passed value of a global variable}
 
 \item{nr}{: The passed value of a global variable}
 
@@ -31,6 +33,10 @@ GetPredictorSubset(
 \item{resolutions}{: The passed value of a global variable}
 
 \item{pro}{: The passed value of a global variable}
+
+\item{from}{: Which row to start cutting the matrix}
+
+\item{to}{: Where does the last row of the cut matrix go}
 }
 \value{
 Parallel calculation of the cut part of the data box data
@@ -40,7 +46,7 @@ calculation function for cutting spatial data (tool function,Not as an open func
 }
 \examples{
 \donttest{
-GetPredictorSubset("dem",4,10,"covariate",486,777,NULL,NULL)
+GetPredictorSubset("dem",4,10,"covariate",486,777,NULL,NULL,1,10)
 }
 }
 \references{

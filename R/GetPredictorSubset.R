@@ -9,12 +9,13 @@
 #' @param predictor.name : the name of the predictor variable
 #' @param iblock : sequence code of parallel computing
 #' @param nblock : number of target blocks (integer)
-#' @param foldername : The passed value of a global variable
+#' @param fn : The passed value of a global variable
 #' @param nr : The passed value of a global variable
 #' @param nc : The passed value of a global variable
 #' @param resolutions : The passed value of a global variable
 #' @param pro : The passed value of a global variable
-#'
+#' @param from : Which row to start cutting the matrix
+#' @param to : Where does the last row of the cut matrix go
 #'
 #' @importFrom raster cellsFromExtent
 #' @importFrom raster projection<-
@@ -26,7 +27,7 @@
 #'
 #' @examples
 #' \donttest{
-#' GetPredictorSubset("dem",4,10,"covariate",486,777,NULL,NULL)
+#' GetPredictorSubset("dem",4,10,"covariate",486,777,NULL,NULL,1,10)
 #' }
 #' @references{
 #' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5–32.
@@ -34,26 +35,46 @@
 #' 983-999 http://jmlr.csail.mit.edu/papers/v7/
 #' Song, X.D., Ge, G.Q., Zhang, G.L. and Wu, H.Y. ParallelDSM: A R package for parallel soil mapping. Computers & Geosciences (to be available in 2021)
 #' }
-GetPredictorSubset <- function(predictor.name,iblock,nblock,foldername,nr,nc,resolutions,pro) {
+GetPredictorSubset <- function(predictor.name,iblock,nblock,fn,nr,nc,resolutions,pro,from,to) {
   #The address of the target file that the file points to
-  file.directory <- paste(foldername,predictor.name, ".tif", sep = "")
+  file.directory <- paste(fn,predictor.name, ".tif", sep = "")
   # Read the data and convert it into Raster data
   raster.temp <- raster::raster(file.directory)
-  # Cut the data in equal quantities
-  if(iblock!=nblock) {
-  # Using the divisor operator
-    nr.block <- nr%/%nblock
-  } else  {
-    nr.block <- nr - (nr%/%nblock)*(nblock-1)
+  # Control the amount of change
+
+  # Determine whether the user passed in the relevant parameters
+  if(is.null(from) == TRUE){
+    if(iblock!=nblock) {
+      nr.block <- nr%/%nblock
+    } else  {
+      nr.block <- nr - (nr%/%nblock)*(nblock-1)
+    }
+    row.offset <- (iblock-1)*nr%/%nblock
+    e <- raster::extent(x=raster.temp,
+                        r1= 0+row.offset,
+                        r2= nr.block+row.offset,
+                        c1=0,
+                        c2=nc)
+  }else{
+    cha <- to - from + 1;
+
+    # Cut the data in equal quantities
+    if(iblock!=nblock) {
+      # Using the divisor operator
+      nr.block <- cha%/%nblock
+    } else  {
+      nr.block <- cha - (cha%/%nblock)*(nblock-1)
+    }
+    # get blocks by rows: this value for the first partition will be 0
+    row.offset <- (iblock-1)*cha%/%nblock
+    # e represents a restricted object (boundary object) extent(xmin,xmax,ymin,ymax)
+    e <- raster::extent(x=raster.temp,
+                        r1= from + row.offset,
+                        r2= from + nr.block+row.offset,
+                        c1=0,
+                        c2=nc)
   }
-  # get blocks by rows: this value for the first partition will be 0
-  row.offset <- (iblock-1)*nr%/%nblock #Offset of each row
-  # e represents a restricted object (boundary object) extent(xmin,xmax,ymin,ymax)
-  e <- raster::extent(x=raster.temp,
-              r1=0+row.offset,
-              r2=nr.block+row.offset,
-              c1=0,
-              c2=nc)
+
   # Get a grid object
   rowcol <- raster::rowColFromCell(raster.temp, cellsFromExtent(raster.temp,e))
   # rowColFromCell(r, c(5,15)) c(x,y)->cellsFromExtent(r,bb) bb->e->boundary object
