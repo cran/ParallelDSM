@@ -54,7 +54,7 @@ Preprocess(mydatas,sampledatas,"twi.tif")
 #####################################################################
 ## Use preprocessor functions to process the data that is loaded in##
 #####################################################################
-# Preprocess(fn = sampledatas,mc = TRUE,icsv = micsv,itif = mitif)
+# Preprocess(fn = sampledatas,mc = TRUE,icsv = df.input,itif = df.dem)
 
 ############################################################################
 ## This function is the main function that performs parallel computations ##

@@ -1,4 +1,4 @@
-b5434a8d330da7e25e8fff62de06d235 *DESCRIPTION
+5ce559eb96bfde6ba763291d5cb3265a *DESCRIPTION
 e31c93bbc18c47baaa454a10e06909b2 *NAMESPACE
 a13915473d4c23ee51611bf07f99a7bc *R/CVfunction.R
 303af31badf0093096f371216c243640 *R/GetPredictorSubset.R
@@ -25,7 +25,7 @@ cceff4d9337a44364ef1ee29f7160055 *man/DsmParallel.Rd
 70c7a04717802616cac5fd6b5c5c7394 *man/InsepectionVariable.Rd
 22760149fd959bc8a3eef4c460e10f6d *man/MergingTiles.Rd
 c9cae70cf3c1fec1db4487a8946b9305 *man/Parallelinit.Rd
-5e606cf12eb3b6c718c973c4cb8f3d0d *man/Preprocess.Rd
+27de3601cd33547ba5eaa357cbd8fa5a *man/Preprocess.Rd
 eddcf4eca95e6ea0325949d61d1e2982 *man/df.dem.Rd
 6fa090bd07f0d69062e043d362e74533 *man/df.input.Rd
 898f81faf0fc01b38f3b94f57f81ee1b *man/df.mrrtf.Rd
