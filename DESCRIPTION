@@ -1,7 +1,7 @@
 Package: ParallelDSM
 Type: Package
 Title: Parallel Digital Soil Mapping using Machine Learning
-Version: 0.2.1
+Version: 0.3.1
 Authors@R: 
     c(
     person("Xiaodong","Song",role = c("aut"),email = "xdsong@issas.ac.cn"),
@@ -18,16 +18,16 @@ Description: Parallel computing, multi-core CPU is used to efficiently compute
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 3.5.0), snowfall, raster
+Depends: R (>= 3.5.0), snowfall, raster, sp
 Imports: methods, pryr, utils, caret, geoR, gstat, quantregForest,
-        randomForest, rgdal, stats, sp,
+        randomForest, stringr, rgdal, stats,
 RoxygenNote: 7.1.0
 NeedsCompilation: no
-Packaged: 2021-05-20 10:37:18 UTC; guaokuangsheng
+Packaged: 2021-06-25 05:49:57 UTC; guaokuangsheng
 Author: Xiaodong Song [aut],
   Gaoqiang Ge [aut, cre],
   Jun Zhu [aut],
   Ganlin Zhang [aut]
 Maintainer: Gaoqiang Ge <gaoqiangge2020@163.com>
 Repository: CRAN
-Date/Publication: 2021-05-21 09:00:05 UTC
+Date/Publication: 2021-06-25 06:10:02 UTC

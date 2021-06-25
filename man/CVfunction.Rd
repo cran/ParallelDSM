@@ -15,7 +15,7 @@ For the gap between the predicted value and expected value of the model, the mod
 }
 \examples{
 test.pred <- c(2,4,5,7,2,4)
-test.real <- c(1,2,3,4,5,6)
-myres <- CVfunction(test.pred,test.real)
+test.obs <- c(1,2,3,4,5,6)
+myres <- CVfunction(test.pred,test.obs)
 print(myres)
 }

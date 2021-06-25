@@ -23,20 +23,20 @@ A function that combines the results of parallel cutting into a single file
 \donttest{
 # you must have a file, which is name "myres"
 # Merging files, for example:
-# f.input.directory <- c("e:/3_20190603_R/results/mapping/test_merging/")
+# f.input.directory <- c("e:/test/")
 # f.input.iblock <- c("sics030_")
 # n.block <- 100
-# f.output.directory <- c("e:/3_20190603_R/results/mapping/erpu.sics030_fuse/")
+# f.output.directory <- c("E:/test/myoutput")
 # f.output.suffix <- c("sics030_together.tif")
 # Naming rules: file.name.directory + file.name.iblock + ".tif"
 
-rmap_dem <- raster("E:/12_Parallel_Test_Paper_R/covariate/250m/dem.tif")
+rmap_dem <- raster("E:/test/dem.tif")
 spdf_dem <- as(rmap_dem,"SpatialPointsDataFrame")
 df_dem <- as.data.frame(spdf_dem)
 # mergeing results together
 n.block <- 100
-f.i.d <- c("E:/12_Parallel_Test_Paper_R/results/mapping_250m/")
-f.o.d <- c("E:/12_Parallel_Test_Paper_R/results/mapping_250m_merge/")
+f.i.d <- c("E:/test/mapping/")
+f.o.d <- c("E:/test/mapping_merge/")
 f.iblock <- c("mlr.ak05.")
 f.suffix <- c("mlr.ak05.tif")
 MergingTiles(df_dem, f.i.d, f.iblock, n.block, f.o.d, f.suffix)

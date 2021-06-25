@@ -1,20 +1,18 @@
-# Parallel computing preprocessing data
+# Parallel computing ParallelIniting data
 # the beginning of parallel computing work preparation
 
 #=========================================================================================================
-#' @title As a data preprocessing function, sets some global variables that are not visible to the user
-#' @param Fpath : the path of file
+#' @title As a data ParallelIniting function, sets some global variables that are not visible to the user
+#' @param Fpath : The file path to the CSV file
 #' @param fn : Name of the folder in which the soil data is stored
-#' @param tname : Standard soil files, which can be used as sample files (under in the FolderName)
-#' @param mc : Read file mode (using data sets, or read yourself)
-#' @param icsv : Use df.input from the built-in dataset
-#' @param itif: Use df.dem in the built-in data set
+#' @param dsmformula: Symbolic description of a soil fitting model
 #' @param nblock : the number of blocks for data cutting
 #' @param ncore : Computes the CPU's kernel in parallel(fill in according to the computer configuration)
 #' @param Fc : the encoding of file
 #'
 #' @return NULL
-#' @export Preprocess
+#' @export ParallelInit
+#'
 #'
 #' @importFrom utils read.csv
 #' @importFrom stats sd
@@ -29,7 +27,7 @@
 #' #####################################################################
 #' mydatas <- system.file("extdata", "all.input.csv", package = "ParallelDSM")
 #' sampledatas <- system.file("extdata", "covariate", package = "ParallelDSM")
-#' Preprocess(mydatas,sampledatas,"twi.tif")
+#' ParallelInit(mydatas,sampledatas,"twi.tif")
 #'
 #' #####################################################################
 #' ##  Example code 2 (It is highly recommended)                      ##
@@ -46,21 +44,21 @@
 #' #sampledatas <- system.file("extdata", "covariate", package = "ParallelDSM")
 #'
 #' #####################################################################
-#' ## Use preprocessor functions to process the data that is loaded in##
+#' ## Use ParallelInit functions to process the data that is loaded in##
 #' #####################################################################
-#' #Preprocess(fn = sampledatas,mc = TRUE,icsv = df.input,itif = df.dem)
+#' #ParallelInit(myinput,sampledata,"socd030 ~ twi + procur + dem")
 #'
 #' ############################################################################
 #' ## This function is the main function that performs parallel computations ##
 #' ## The outpath field refers to the filename of the data output            ##
 #' ## The mymodels field has three modes to choose from: QRF,RF and MLR      ##
-#' ## ‘QRF’ stands for Random Forest Model Prediction Method                 ##
-#' ## ‘RF’ stands for Machine Learning Model Prediction Method               ##
+#' ## ‘QRF’ stands for Quantile Regression Forest Model Prediction Method    ##
+#' ## ‘RF’ stands for Random Forest Model Prediction Method                  ##
 #' ## ‘MLR’ stands for Multiple Linear Regression Prediction Model           ##
 #' ## 'from' and 'to' are reserved fields that can be left unused by the user##
 #' ############################################################################
 #'
-#' #DsmParallel(outpath = "myoutputs",mymodels = "MLR",from=1,to=200)
+#' #ParallelComputing(outpath = "myoutputs",mymodels = "MLR")
 #'
 #'
 #'
@@ -69,7 +67,6 @@
 #' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5–32.
 #' Meinshausen, N. (2006) "Quantile Regression Forests", Journal of Machine Learning Research 7,
 #' 983-999 http://jmlr.csail.mit.edu/papers/v7/
-#' Song, X.D., Ge, G.Q., Zhang, G.L. and Wu, H.Y. ParallelDSM: A R package for parallel soil mapping. Computers & Geosciences (to be available in 2021)
 #' }
 #'
 dsm.env <- new.env()
@@ -83,6 +80,7 @@ dsm.env$nblock <- 0
 dsm.env$resolutions <- NULL
 dsm.env$pro <- NULL
 dsm.env$foldername <- NULL
+dsm.env$dsmformulas <- NULL
 dsm.env$nr <- 0
 dsm.env$nc <- 0
 dsm.env$ncore <- 0
@@ -97,7 +95,20 @@ dsm.env$rf.variable <- NULL
 dsm.env$mlr.variable <- NULL
 dsm.env$outputnames <- NULL
 dsm.env$choicemodel <- "QRF"
-Preprocess <- function(Fpath="",fn="",tname="",mc=NULL,icsv=NULL,itif=NULL,nblock=6,ncore=2,Fc=1){
+ParallelInit <- function(Fpath="",fn="",dsmformula="",nblock=6,ncore=2,Fc=1){
+
+  dsm.env$dsmformulas <- dsmformula
+
+  x <- dsmformula
+  formulas <- c(x)
+  res1 <- str_split(formulas, " \\+ ")
+  #print(length(res1[[1]]))
+  tmp <- c(res1[[1]][1])
+  ans <- str_split(tmp, " ~ ")
+  tname <- ans[[1]][2]
+  #print(tname)
+
+
   # Generate environment variables
   # Create a new environment variable to store global variables without exposing them to the public.
 
@@ -117,14 +128,9 @@ Preprocess <- function(Fpath="",fn="",tname="",mc=NULL,icsv=NULL,itif=NULL,nbloc
     Fc <- 'UTF-8'
   }
 
-  if(is.null(mc) == TRUE){
-    # @Param : df.input => Read the metadata file
-    dsm.env$df.input<-read.csv(file = Fpath,sep=",",fileEncoding = Fc)
-    #print(dsm.env$df.input)
-  }else{
-    dsm.env$df.input<-icsv
-    #print(dsm.env$df.input)
-  }
+  # @Param : df.input => Read the metadata file
+  dsm.env$df.input<-read.csv(file = Fpath,sep=",",fileEncoding = Fc)
+  #print(dsm.env$df.input)
 
   # @Param : numCloumn => Number of columns of data
   dsm.env$numColumn <- length(names(dsm.env$df.input))
@@ -181,29 +187,14 @@ Preprocess <- function(Fpath="",fn="",tname="",mc=NULL,icsv=NULL,itif=NULL,nbloc
   }
 
 
-  if(is.null(mc) == TRUE){
-    # sample data(Standardized data)
-    dsm.env$sample.path <- paste(fn,"/",tname,sep="")
-    dsm.env$rmap_variable <- raster::raster(dsm.env$sample.path)
+  # sample data(Standardized data)
+  dsm.env$sample.path <- paste(fn,"/",tname,".tif",sep="")
+  dsm.env$rmap_variable <- raster::raster(dsm.env$sample.path)
 
-    # the datas for merge file.
-    dsm.env$df.dem <- dsm.env$rmap_variable
-    dsm.env$df.dem <- as(dsm.env$df.dem,"SpatialPointsDataFrame")
-    dsm.env$df.dem <- as.data.frame(dsm.env$df.dem)
-  }else{
-    dsm.env$sample.path <- paste(fn,"/",tname,sep="")
-    dsm.env$rmap_variable <- itif
-    # the datas for merge file.
-
-    #print(itif)
-    #print("================================")
-    #print(dsm.env$rmap_variable)
-
-    dsm.env$df.dem <- as(itif,"SpatialPointsDataFrame")
-
-    dsm.env$df.dem <- as.data.frame(dsm.env$df.dem)
-  }
-
+  # the datas for merge file.
+  dsm.env$df.dem <- dsm.env$rmap_variable
+  dsm.env$df.dem <- as(dsm.env$df.dem,"SpatialPointsDataFrame")
+  dsm.env$df.dem <- as.data.frame(dsm.env$df.dem)
 
 
   # get information about data
@@ -216,10 +207,158 @@ Preprocess <- function(Fpath="",fn="",tname="",mc=NULL,icsv=NULL,itif=NULL,nbloc
   # foldername
   dsm.env$foldername <- paste(fn,"/",sep="")
 }
+
 #=========================================================================================================
-#  Parallelint function ====> Compute the function part in parallel
+#' @title Data initialization function is the first step to complete parallel training
+#' @param fn : Name of the folder in which the soil data is stored
+#' @param icsv : Use df.input from the built-in dataset
+#' @param dsmformula: Symbolic description of a soil fitting model
+#' @param nblock : the number of blocks for data cutting
+#' @param ncore : Computes the CPU's kernel in parallel(fill in according to the computer configuration)
+#' @return NULL
+#' @export ParallelInit_Test
+#'
+#' @importFrom utils read.csv
+#' @importFrom stats sd
+#' @importFrom raster res
+#' @importFrom sp proj4string
+#' @importFrom utils data
+#'
+#' @examples
+#' #####################################################################
+#' ##  Example code 1                                                 ##
+#' ##  Select your own reading method, as shown below                 ##
+#' #####################################################################
+#' mydatas <- system.file("extdata", "all.input.csv", package = "ParallelDSM")
+#' sampledatas <- system.file("extdata", "covariate", package = "ParallelDSM")
+#' ParallelInit(mydatas,sampledatas,"twi.tif")
+#'
+#' #####################################################################
+#' ##  Example code 2 (It is highly recommended)                      ##
+#' ##  If you want to use test cases, load the relevant data sets     ##
+#' #####################################################################
+#' #  Select the data set that comes with this package
+#'
+#' library(ParallelDSM)
+#' data("df.input",package = "ParallelDSM")
+#' data("df.dem",package = "ParallelDSM")
+#' data("df.twi",package = "ParallelDSM")
+#' sampledata <- system.file("extdata", "covariate", package = "ParallelDSM")
+#' ParallelInit_Test(sampledata,df.input,dsmformula = "socd030 ~ dem + twi")
+#' #ParallelComputing(outpath = "qrfOutput",mymodels = "QRF")
+#'
+#' #####################################################################
+#' ##  Use the data file references that come with this package       ##
+#' #####################################################################
+#' #sampledatas <- system.file("extdata", "covariate", package = "ParallelDSM")
+#'
+#' #####################################################################
+#' ## Use ParallelInit functions to process the data that is loaded in##
+#' #####################################################################
+#' #ParallelInit_Test(sampledata,df.input,dsmformula = "socd030 ~ dem + twi")
+#'
+#' ############################################################################
+#' ## This function is the main function that performs parallel computations ##
+#' ## The outpath field refers to the filename of the data output            ##
+#' ## The mymodels field has three modes to choose from: QRF,RF and MLR      ##
+#' ## ‘QRF’ stands for Random Forest Model Prediction Method                 ##
+#' ## ‘RF’ stands for Machine Learning Model Prediction Method               ##
+#' ## ‘MLR’ stands for Multiple Linear Regression Prediction Model           ##
+#' ## 'from' and 'to' are reserved fields that can be left unused by the user##
+#' ############################################################################
+#'
+#' #ParallelComputing(outpath = "myoutputs",mymodels = "MLR",from=1,to=200)
+#'
+#'
+#' @references{
+#' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5–32.
+#' Meinshausen, N. (2006) "Quantile Regression Forests", Journal of Machine Learning Research 7,
+#' 983-999 http://jmlr.csail.mit.edu/papers/v7/
+#' }
+#'
+ParallelInit_Test <- function(fn="",icsv=NULL,dsmformula=NULL,nblock=6,ncore=2){
+
+  df.dem <- NULL
+  dsm.env$dsmformulas <- dsmformula
+
+  data("df.dem",envir = environment())
+  itif <- df.dem
+  #print(itif)
+
+
+  dsm.env$df.input<-icsv
+  dsm.env$numColumn <- length(names(dsm.env$df.input))
+  dsm.env$df.input <- dsm.env$df.input[,c(1:dsm.env$numColumn)]
+  for(item in 1:dsm.env$numColumn){
+    dsm.env$df.input[[item]] <- as.numeric(dsm.env$df.input[[item]])
+  }
+  dsm.env$meansx <- apply(dsm.env$df.input[,c(2:dsm.env$numColumn)],2,mean,na.rm=T)
+  dsm.env$sdsx <- apply(dsm.env$df.input[,c(2:dsm.env$numColumn)],2,sd,na.rm=T)
+  dsm.env$df.input[,c(2:dsm.env$numColumn)] <- scale(dsm.env$df.input[c(2:dsm.env$numColumn)])
+  dsm.env$name_variable <- names(dsm.env$df.input[1])
+  index_array <- is.na(dsm.env$df.input[dsm.env$name_variable])
+  dsm.env$ids <- which(index_array==FALSE)
+  dsm.env$df.nameVariable <- as.data.frame(dsm.env$df.input[dsm.env$ids,])
+  dsm.env$df.nameVariable <- dsm.env$df.nameVariable[,c(1:dsm.env$numColumn)]
+  dsm.env$ids <- which( dsm.env$df.nameVariable[dsm.env$name_variable] < 0.01 )
+  dsm.env$df.nameVariable[dsm.env$name_variable][dsm.env$ids] <- 0.01
+  dsm.env$df.all.sub <- NULL
+  if(is.na(nblock) == FALSE){
+    dsm.env$nblock <- nblock
+  }else{
+    dsm.env$nblock <- 10
+  }
+  if(is.na(ncore) == FALSE){
+    dsm.env$ncore <- ncore
+  }else{
+    dsm.env$ncore <- 2
+  }
+
+
+  dsm.env$sample.path <- paste(fn,"/","dem",sep="")
+  dsm.env$rmap_variable <- itif
+  dsm.env$df.dem <- as(itif,"SpatialPointsDataFrame")
+  dsm.env$df.dem <- as.data.frame(dsm.env$df.dem)
+
+
+
+
+  # get information about data
+  dsm.env$nr <- dsm.env$rmap_variable@nrows
+  dsm.env$nc <- dsm.env$rmap_variable@ncols
+  # calculation resolution
+  dsm.env$resolutions <- res(dsm.env$rmap_variable)[1]
+  # create projection
+  dsm.env$pro <- proj4string(dsm.env$rmap_variable)
+  # foldername
+  dsm.env$foldername <- paste(fn,"/",sep="")
+
+}
+#=========================================================================================================
+#  NormalizeData function
 #=======================================================================================
-#' @title Parallel computing initialization preparation
+#' @title Standardize and normalize data elements
+#'
+#' @return NULL
+#' @export NormalizeData
+#'
+#' @examples
+#' \donttest{
+#' # This function is optional to the user, depending on the data situation.
+#' NormalizeData()
+#' }
+#'
+#'
+NormalizeData <- function(){
+  dsm.env$max.change <- mean(dsm.env$df.nameVariable[[dsm.env$name_variable]]) + 3*sd(dsm.env$df.nameVariable[[dsm.env$name_variable]])
+  dsm.env$ids <- which(dsm.env$df.nameVariable[[dsm.env$name_variable]] > dsm.env$max.change)
+  dsm.env$df.nameVariable[dsm.env$ids,][dsm.env$name_variable] <- dsm.env$max.change
+}
+
+#=========================================================================================================
+#  DataProcess function ====> Compute the function part in parallel
+#=======================================================================================
+#' @title Parallel computing initialization preparation(This function is not open to users)
 #'
 #' @param mymodel : The models were selected, including QRF,RF and MLR.
 #'
@@ -229,18 +368,16 @@ Preprocess <- function(Fpath="",fn="",tname="",mc=NULL,icsv=NULL,itif=NULL,nbloc
 #' @importFrom stats sd
 #' @importFrom stats lm
 #' @importFrom stats as.formula
+#' @importFrom stringr str_split
 #' @examples
 #' \donttest{
-#' Parallelinit(mymodel = "QRF")
+#' #This function only serves the ParallelComputing function.
+#' DataProcess(mymodel = "QRF")
 #' }
 #'
 #'
-Parallelinit <- function(mymodel) {
+DataProcess <- function(mymodel) {
   # Parallel computation of the prepare function
-  # Eliminate the dimensional
-  dsm.env$max.change <- mean(dsm.env$df.nameVariable[[dsm.env$name_variable]]) + 3*sd(dsm.env$df.nameVariable[[dsm.env$name_variable]])
-  dsm.env$ids <- which(dsm.env$df.nameVariable[[dsm.env$name_variable]] > dsm.env$max.change)
-  dsm.env$df.nameVariable[dsm.env$ids,][dsm.env$name_variable] <- dsm.env$max.change
   # Get a set of variables
   mylens <- ncol(dsm.env$df.nameVariable)
   dsm.env$name.x.variable <- c()
@@ -254,49 +391,38 @@ Parallelinit <- function(mymodel) {
   dsm.env$df.input <- dsm.env$df.nameVariable
   # Select the model : QRF、RF、MLR
 
-  dsm.env$xtrain <- dsm.env$df.input[,(names(dsm.env$df.input) %in% dsm.env$name.x.variable)]
-  dsm.env$ytrain <- dsm.env$df.input$ln.variable
-  dsm.env$qrf.variable <- quantregForest::quantregForest(x=dsm.env$xtrain, y=dsm.env$ytrain)
+  #dsm.env$xtrain <- dsm.env$df.input[,(names(dsm.env$df.input) %in% dsm.env$name.x.variable)]
+  #dsm.env$ytrain <- dsm.env$df.input$ln.variable
+  #dsm.env$qrf.variable <- quantregForest::quantregForest(x=dsm.env$xtrain, y=dsm.env$ytrain)
 
   if(mymodel == "MLR"){
-    myformula <- paste("ln.variable","~");
-
-    for (nums in 3:mylens-1){
-      partformula <- paste(names(dsm.env$df.nameVariable[nums]),"+");
-      myformula <- paste(myformula,partformula);
-    }
-
-    myformula <- paste(myformula,names(dsm.env$df.nameVariable[mylens]));
-    fmla.ak05 <- as.formula(myformula);
-    dsm.env$mlr.variable <- lm(fmla.ak05, data = dsm.env$df.input)
-    print("=========");
+    fmla <- as.formula(dsm.env$dsmformulas);
+    dsm.env$mlr.variable <- lm(fmla, data = dsm.env$df.input)
     print(dsm.env$mlr.variable);
-    print("=========");
-
   }else if(mymodel == "RF"){
-    # get the formula of all
-    myformula <- paste("ln.variable","~");
-
-    for (nums in 3:mylens-1){
-      partformula <- paste(names(dsm.env$df.nameVariable[nums]),"+");
-      myformula <- paste(myformula,partformula);
-    }
-
-    myformula <- paste(myformula,names(dsm.env$df.nameVariable[mylens]));
-    fmla.ak05 <- as.formula(myformula);
-    dsm.env$rf.variable <- randomForest::randomForest(fmla.ak05, data = dsm.env$df.input, importance=TRUE)
-
-    print("=========");
+    fmla <- as.formula(dsm.env$dsmformulas);
+    dsm.env$rf.variable <- randomForest::randomForest(fmla, data = dsm.env$df.input, importance=TRUE)
     print(dsm.env$rf.variable);
-    print("=========");
   }else{
-    dsm.env$xtrain <- dsm.env$df.input[,(names(dsm.env$df.input) %in% dsm.env$name.x.variable)]
+    x <- dsm.env$dsmformulas
+    formulas <- c(x)
+    res1 <- str_split(formulas, " \\+ ")
+    #print(length(res1[[1]]))
+    tmp <- c(res1[[1]][1])
+    ans <- str_split(tmp, " ~ ")
+    mres.variable <- c()
+    mres.variable <- c(mres.variable,ans[[1]][2])
+    for(i in 2:length(res1[[1]])){
+      tmps <- res1[[1]][i]
+      mres.variable <- c(mres.variable,tmps)
+    }
+    dsm.env$xtrain <- dsm.env$df.input[,(names(dsm.env$df.input) %in% mres.variable)]
     dsm.env$ytrain <- dsm.env$df.input$ln.variable
     dsm.env$qrf.variable <- quantregForest::quantregForest(x=dsm.env$xtrain, y=dsm.env$ytrain)
-
-    print("=========");
-    print(dsm.env$qrf.variable);
-    print("=========");
+    print(dsm.env$qrf.variable)
+    #print("============")
+    #print(typeof(mres.variable))
+    #print(mres.variable)
   }
   #print("=========")
   #print(myformula)
@@ -308,50 +434,82 @@ Parallelinit <- function(mymodel) {
   #print(dsm.env$qrf.variable);
 }
 #===============================================================================================
-# DsmParallel function =====> Main function
+# ParallelComputing function =====> Main function
 #===============================================================================================
-#' @title DsmParallel computings
+#' @title ParallelComputing Functions
 #' @param outpath : Output path of the result of the prediction file. The default is "output".
 #' @param mymodels : The models were selected, including QRF,RF and MLR.
-#' @param from : Which row to start cutting the matrix
-#' @param to : Where does the last row of the cut matrix go
 #'
 #' @return NULL
-#' @export DsmParallel
+#' @export ParallelComputing
 #'
 #' @importFrom raster predict
 #' @importFrom sp coordinates<-
 #' @importFrom sp gridded<-
 #' @importFrom rgdal writeGDAL
+#' @details
+#' This function is the main function that performs parallel computations
+#' The outpath field refers to the filename of the data output
+#' The mymodels field has three modes to choose from: QRF,RF and MLR
+#' ‘QRF’ stands for Quantile Regression Forest Model Prediction Method
+#' ‘RF’ stands for Random Forest Model Prediction Method
+#' ‘MLR’ stands for Multiple Linear Regression Prediction Model
+#'
+#'
 #'
 #' @examples
 #' \donttest{
+#' ## This function performs parallel computing, of which the parameters are as follows:
+#' ## outpath: the filename of the data output
+#' ## mymodels: which model user want to use. Three modes are available:
+#' ## Quantile Regression Forest (QRF),Random Forest (RF) and Multiple Linear Regression (MLR)
 #'
-#' #####################################################################################
-#' ## Review the documentation for the Preprocess function before using this function ##
-#' #####################################################################################
+#'####################################################################################
+#'# Example 1: Using random forest to produce soil map based on data in this package
+#'# Loads related data sets
+#'data("df.input" , package = "ParallelDSM")
+#'data("df.mrrtf" , package = "ParallelDSM")
+#'data("df.dem" , package = "ParallelDSM")
 #'
-#' ############################################################################
-#' ## This function is the main function that performs parallel computations ##
-#' ## The outpath field refers to the filename of the data output            ##
-#' ## The mymodels field has three modes to choose from: QRF,RF and MLR      ##
-#' ## ‘QRF’ stands for Random Forest Model Prediction Method                 ##
-#' ## ‘RF’ stands for Machine Learning Model Prediction Method               ##
-#' ## ‘MLR’ stands for Multiple Linear Regression Prediction Model           ##
-#' ## 'from' and 'to' are reserved fields that can be left unused by the user##
-#' ############################################################################
+#'# Sets the path to the folder where the dataset will be stored
+#'sampledata <- system.file("extdata" , "covariate", package = "ParallelDSM")
 #'
-#' DsmParallel(outpath = "myoutputs",mymodels = "MLR",from=1,to=200)
+#'# Initializing the parameters for parallel computing
+#'# ParallelInit_Test is same as ParallelInit
+#'ParallelInit_Test(sampledata,df.input,dsmformul="socd030 ~ dem + mrrtf")
+#'NormalizeData()
+#'ParallelComputing(outpath = "mlrOutput" , mymodels = "MLR")
+#'###################################################################################
+#'
+#'
+#'###################################################################################
+#'##  Example 2: Performing soil mapping based on my data with 3 CPUs ##
+#'
+#'myinput <- "./all.input.csv"
+#'# The sample data represents the file name where the data file is stored
+#'
+#'# ‘covariate’ is the path name of a file
+#'sampledata <- "./covariate" # the directory and filename
+#'# The third parameter represents the name of the TIF file.
+#'# nblock is used to partition the tif data into several blocks in the terms of row
+#'# An appropriate nblock may optimize the speedup of parallel computing
+#'ParallelInit(myinput,sampledata,"socd030 ~ twi + dem", nblock = 30 , ncore = 3)
+#'
+#'ParallelComputing(outpath = "qrfOutput" , mymodels = "QRF")
+#'###################################################################################
+#'
+#'
 #' }
 #' @references{
 #' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5–32.
 #' Meinshausen, N. (2006) "Quantile Regression Forests", Journal of Machine Learning Research 7,
 #' 983-999 http://jmlr.csail.mit.edu/papers/v7/
-#' Song, X.D., Ge, G.Q., Zhang, G.L. and Wu, H.Y. ParallelDSM: A R package for parallel soil mapping. Computers & Geosciences (to be available in 2021)
 #' }
-DsmParallel <- function(outpath,mymodels,from=NULL,to=NULL) {
+ParallelComputing <- function(outpath,mymodels) {
+  from <- NULL
+  to <- NULL
   # Load the required functions
-  Parallelinit(mymodel = mymodels)
+  DataProcess(mymodel = mymodels)
   dsm.env$choicemodel <- mymodels
   dsm.env$outputnames <- outpath
 
