@@ -8,7 +8,8 @@
 #' @export
 #'
 #' @examples
-#' smalltesttoy()
+#' flag <- ""
+#' smalltesttoy(flag)
 #'
 #'
 smalltesttoy <- function(myflag){

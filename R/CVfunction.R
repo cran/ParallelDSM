@@ -6,13 +6,13 @@
 #' @param actual  : The real value
 #'
 #' @return Vector-value after model accuracy verification
-#'
-#' @importFrom("stats", "cor")
+#' @export CVfunction
+#' @importFrom stats cor
 #'
 #' @examples
 #' test.pred <- c(2,4,5,7,2,4)
 #' test.obs <- c(1,2,3,4,5,6)
-#' myres <- CVfunction(test.pred,test.real)
+#' myres <- CVfunction(test.pred,test.obs)
 #' print(myres)
 #'
 #'

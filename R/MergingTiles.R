@@ -48,33 +48,51 @@ MergingTiles <- function(df_dem, f.i.d, f.iblock, n.block, f.o.d, f.suffix)
 
   # Output relative path names
   print("=============================** ParallelDSM information **=============================")
-  print("Soil mapping is successfully performed, and the predicted results are stored as follows:")
+  # print("Soil mapping is successfully performed, and the predicted results are stored as follows:")
   myprefix <- getwd()
   allAddress <- paste(myprefix,'/',substring(f.prefix,1,nchar(f.prefix) - 1),'.tif',sep = "")
-  print(allAddress)
+  # print(allAddress)
+    for(i in 1:n.block)
+    {
+      in.file.name <- paste(f.prefix, i, ".tif", sep = "")
 
-  for(i in 1:n.block)
-  {
-    in.file.name <- paste(f.prefix, i, ".tif", sep = "")
+      #Reading a tile
+      rmap_i <- raster(in.file.name); spdf_i <- as(rmap_i,"SpatialPointsDataFrame")
+      df.i <- as.data.frame(spdf_i)
 
-    #Reading a tile
-    rmap_i <- raster(in.file.name); spdf_i <- as(rmap_i,"SpatialPointsDataFrame")
-    df.i <- as.data.frame(spdf_i)
+      #Update the row numbers of from and to
+      if(i==1)  {
+        pixel.from <- 1
+        pixel.to <- nrow(df.i)
+      }  else  if(i>1)  {
+        pixel.from <- pixel.to+1;  pixel.to <- pixel.from+nrow(df.i)-1
+      }
 
-    #Update the row numbers of from and to
-    if(i==1)  {
-      pixel.from <- 1
-      pixel.to <- nrow(df.i)
-    }  else  if(i>1)  {
-      pixel.from <- pixel.to+1;  pixel.to <- pixel.from+nrow(df.i)-1
+      # df.output[ c(pixel.from:pixel.to), 1] <- df.i[,1]
+      df.output[c(pixel.from:pixel.to), 1] <- df.i[, 1]
     }
+    # df.output <- na.omit(df.output)
+    df.output <- as.data.frame(df.output);
+    coordinates(df.output) <- c("x","y");
 
-    df.output[ c(pixel.from:pixel.to), 1] <- df.i[,1]
-  }
-
-  df.output <- as.data.frame(df.output); coordinates(df.output) <- c("x","y"); gridded(df.output) <- TRUE
-
-  writeGDAL(dataset = df.output["res"], fname = f.suffix, drivername = "GTiff", type = "Float32")
+    tryCatch({
+      gridded(df.output) <- TRUE
+      writeGDAL(dataset = df.output["res"], fname = f.suffix, drivername = "GTiff", type = "Float32")
+    },
+    warning = function(warn)
+    {
+      print("warning: ")
+      print(warn)
+      options(warn = -1)
+      gridded(df.output) <- TRUE
+      writeGDAL(dataset = df.output["res"], fname = f.suffix, drivername = "GTiff", type = "Float32")
+      options(warn = 1)
+    }
+    )
+    print("MergingTiles done.")
+    print("Soil mapping is successfully performed, and the predicted results are stored as follows:")
+    print(allAddress)
+    # # sp::points2grid(df.output)
   return (1)
 }
 #=====================================================================================================

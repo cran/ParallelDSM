@@ -8,13 +8,19 @@ MergingTiles(df_dem, f.i.d, f.iblock, n.block, f.o.d, f.suffix)
 }
 \arguments{
 \item{df_dem}{: The predicted source file before merging}
+
 \item{f.i.d}{: Enter the absolute path to the file}
+
 \item{f.iblock}{: The filename prefix of the resulting result}
+
 \item{n.block}{: The number of blocks cut is calculated in parallel}
+
 \item{f.o.d}{: The absolute output path of the file}
+
 \item{f.suffix}{: The suffix for the output of the file}
-
-
+}
+\value{
+1
 }
 \description{
 A function that combines the results of parallel cutting into a single file
@@ -26,13 +32,14 @@ A function that combines the results of parallel cutting into a single file
 # f.input.directory <- c("e:/test/")
 # f.input.iblock <- c("sics030_")
 # n.block <- 100
-# f.output.directory <- c("E:/test/myoutput")
+# f.output.directory <- c("e:/test/myoutput")
 # f.output.suffix <- c("sics030_together.tif")
 # Naming rules: file.name.directory + file.name.iblock + ".tif"
 
 rmap_dem <- raster("E:/test/dem.tif")
 spdf_dem <- as(rmap_dem,"SpatialPointsDataFrame")
 df_dem <- as.data.frame(spdf_dem)
+
 # mergeing results together
 n.block <- 100
 f.i.d <- c("E:/test/mapping/")
@@ -41,4 +48,5 @@ f.iblock <- c("mlr.ak05.")
 f.suffix <- c("mlr.ak05.tif")
 MergingTiles(df_dem, f.i.d, f.iblock, n.block, f.o.d, f.suffix)
 }
+
 }

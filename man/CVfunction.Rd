@@ -4,11 +4,15 @@
 \alias{CVfunction}
 \title{For the gap between the predicted value and expected value of the model, the model validates the function}
 \usage{
-CVfunction(pred,actual)
+CVfunction(pred, actual)
 }
 \arguments{
 \item{pred}{: Value predicted by the model}
+
 \item{actual}{: The real value}
+}
+\value{
+Vector-value after model accuracy verification
 }
 \description{
 For the gap between the predicted value and expected value of the model, the model validates the function
@@ -18,4 +22,6 @@ test.pred <- c(2,4,5,7,2,4)
 test.obs <- c(1,2,3,4,5,6)
 myres <- CVfunction(test.pred,test.obs)
 print(myres)
+
+
 }

@@ -5,7 +5,7 @@
 #' @title As a data ParallelIniting function, sets some global variables that are not visible to the user
 #' @param Fpath : The file path to the CSV file
 #' @param fn : Name of the folder in which the soil data is stored
-#' @param dsmformula: Symbolic description of a soil fitting model
+#' @param dsmformula : Symbolic description of a soil fitting model
 #' @param nblock : the number of blocks for data cutting
 #' @param ncore : Computes the CPU's kernel in parallel(fill in according to the computer configuration)
 #' @param Fc : the encoding of file
@@ -18,6 +18,8 @@
 #' @importFrom stats sd
 #' @importFrom raster res
 #' @importFrom sp proj4string
+#' @import stringr
+#' @import stringr str_split
 #'
 #' @examples
 #'
@@ -27,7 +29,7 @@
 #' #####################################################################
 #' mydatas <- system.file("extdata", "all.input.csv", package = "ParallelDSM")
 #' sampledatas <- system.file("extdata", "covariate", package = "ParallelDSM")
-#' ParallelInit(mydatas,sampledatas,"twi.tif")
+#' ParallelInit(mydatas,sampledatas,"socd030 ~ twi + dem + pa")
 #'
 #' #####################################################################
 #' ##  Example code 2 (It is highly recommended)                      ##
@@ -101,7 +103,7 @@ ParallelInit <- function(Fpath="",fn="",dsmformula="",nblock=6,ncore=2,Fc=1){
 
   x <- dsmformula
   formulas <- c(x)
-  res1 <- str_split(formulas, " \\+ ")
+  res1 <- stringr::str_split(formulas, " \\+ ")
   #print(length(res1[[1]]))
   tmp <- c(res1[[1]][1])
   ans <- str_split(tmp, " ~ ")
@@ -130,8 +132,34 @@ ParallelInit <- function(Fpath="",fn="",dsmformula="",nblock=6,ncore=2,Fc=1){
 
   # @Param : df.input => Read the metadata file
   dsm.env$df.input<-read.csv(file = Fpath,sep=",",fileEncoding = Fc)
-  #print(dsm.env$df.input)
+  dsm.env$df.input <- na.omit(dsm.env$df.input)
+  dsm.env$colindex <- 1
+  dsm.env$pattern <- "[:alpha:]"
+  while(TRUE)
+  {
+    if(dsm.env$colindex <= ncol(dsm.env$df.input))
+    {
+      for(j in 1 : length(dsm.env$df.input[[dsm.env$colindex]]))
+      {
+        if(!is.na(dsm.env$df.input[[dsm.env$colindex]][j])) {
+          if(length(stringr::str_subset(dsm.env$df.input[[dsm.env$colindex]][j], pattern = dsm.env$pattern)) > 0) {
+            dsm.env$df.input <- dsm.env$df.input[,-dsm.env$colindex]
+            dsm.env$colindex = dsm.env$colindex - 1
+            break
+          }
+        }
+      } # for end
+      dsm.env$colindex = dsm.env$colindex + 1
+    }
+    else
+    {
+      break
+    }
 
+  }# while end
+  # dsm.env$df.input <- na.omit(dsm.env$df.input)
+  # print(dsm.env$df.input)
+  # print(dimnames(dsm.env$df.input))
   # @Param : numCloumn => Number of columns of data
   dsm.env$numColumn <- length(names(dsm.env$df.input))
 
@@ -186,9 +214,9 @@ ParallelInit <- function(Fpath="",fn="",dsmformula="",nblock=6,ncore=2,Fc=1){
     dsm.env$ncore <- 2
   }
 
-
   # sample data(Standardized data)
   dsm.env$sample.path <- paste(fn,"/",tname,".tif",sep="")
+  print(dsm.env$sample.path)
   dsm.env$rmap_variable <- raster::raster(dsm.env$sample.path)
 
   # the datas for merge file.
@@ -231,20 +259,19 @@ ParallelInit <- function(Fpath="",fn="",dsmformula="",nblock=6,ncore=2,Fc=1){
 #' #####################################################################
 #' mydatas <- system.file("extdata", "all.input.csv", package = "ParallelDSM")
 #' sampledatas <- system.file("extdata", "covariate", package = "ParallelDSM")
-#' ParallelInit(mydatas,sampledatas,"twi.tif")
+#' ParallelInit(mydatas,sampledatas,"socd030 ~ twi + dem + pa")
 #'
 #' #####################################################################
 #' ##  Example code 2 (It is highly recommended)                      ##
 #' ##  If you want to use test cases, load the relevant data sets     ##
-#' #####################################################################
-#' #  Select the data set that comes with this package
+#' ##  Select the data set that comes with this package
 #'
 #' library(ParallelDSM)
 #' data("df.input",package = "ParallelDSM")
 #' data("df.dem",package = "ParallelDSM")
 #' data("df.twi",package = "ParallelDSM")
 #' sampledata <- system.file("extdata", "covariate", package = "ParallelDSM")
-#' ParallelInit_Test(sampledata,df.input,dsmformula = "socd030 ~ dem + twi")
+#' ParallelInit_Test(sampledata,df.input,dsmformula = "socd030 ~ twi + dem")
 #' #ParallelComputing(outpath = "qrfOutput",mymodels = "QRF")
 #'
 #' #####################################################################
@@ -283,7 +310,7 @@ ParallelInit_Test <- function(fn="",icsv=NULL,dsmformula=NULL,nblock=6,ncore=2){
 
   data("df.dem",envir = environment())
   itif <- df.dem
-  #print(itif)
+  print(itif)
 
 
   dsm.env$df.input<-icsv
@@ -315,10 +342,13 @@ ParallelInit_Test <- function(fn="",icsv=NULL,dsmformula=NULL,nblock=6,ncore=2){
   }
 
 
-  dsm.env$sample.path <- paste(fn,"/","dem",sep="")
+  dsm.env$sample.path <- paste(fn,"/","dem.tif",sep="")
+  print(dsm.env$sample.path)
   dsm.env$rmap_variable <- itif
-  dsm.env$df.dem <- as(itif,"SpatialPointsDataFrame")
-  dsm.env$df.dem <- as.data.frame(dsm.env$df.dem)
+  dsm.env$rmap_variable <- raster::raster(dsm.env$sample.path)
+  # dsm.env$df.dem <- as(itif,"SpatialPointsDataFrame")
+  dsm.env$df.dem <- as(dsm.env$rmap_variable,"SpatialPointsDataFrame")
+  # dsm.env$df.dem <- as.data.frame(dsm.env$df.dem)
 
 
 
@@ -329,6 +359,8 @@ ParallelInit_Test <- function(fn="",icsv=NULL,dsmformula=NULL,nblock=6,ncore=2){
   # calculation resolution
   dsm.env$resolutions <- res(dsm.env$rmap_variable)[1]
   # create projection
+  dsm.env$pro <- proj4string(dsm.env$rmap_variable)
+
   dsm.env$pro <- proj4string(dsm.env$rmap_variable)
   # foldername
   dsm.env$foldername <- paste(fn,"/",sep="")
@@ -352,7 +384,10 @@ ParallelInit_Test <- function(fn="",icsv=NULL,dsmformula=NULL,nblock=6,ncore=2){
 NormalizeData <- function(){
   dsm.env$max.change <- mean(dsm.env$df.nameVariable[[dsm.env$name_variable]]) + 3*sd(dsm.env$df.nameVariable[[dsm.env$name_variable]])
   dsm.env$ids <- which(dsm.env$df.nameVariable[[dsm.env$name_variable]] > dsm.env$max.change)
-  dsm.env$df.nameVariable[dsm.env$ids,][dsm.env$name_variable] <- dsm.env$max.change
+  if(length(dsm.env$ids) != 0)
+  {
+    dsm.env$df.nameVariable[dsm.env$ids,][dsm.env$name_variable] <- dsm.env$max.change
+  }
 }
 
 #=========================================================================================================
@@ -394,15 +429,14 @@ DataProcess <- function(mymodel) {
   #dsm.env$xtrain <- dsm.env$df.input[,(names(dsm.env$df.input) %in% dsm.env$name.x.variable)]
   #dsm.env$ytrain <- dsm.env$df.input$ln.variable
   #dsm.env$qrf.variable <- quantregForest::quantregForest(x=dsm.env$xtrain, y=dsm.env$ytrain)
-
   if(mymodel == "MLR"){
     fmla <- as.formula(dsm.env$dsmformulas);
     dsm.env$mlr.variable <- lm(fmla, data = dsm.env$df.input)
-    print(dsm.env$mlr.variable);
+    print(dsm.env$mlr.variable)
   }else if(mymodel == "RF"){
     fmla <- as.formula(dsm.env$dsmformulas);
     dsm.env$rf.variable <- randomForest::randomForest(fmla, data = dsm.env$df.input, importance=TRUE)
-    print(dsm.env$rf.variable);
+    print(dsm.env$rf.variable)
   }else{
     x <- dsm.env$dsmformulas
     formulas <- c(x)
@@ -558,24 +592,33 @@ ParallelComputing <- function(outpath,mymodels) {
   #===================================================================================
   ParallelComputingVariable <- function(idx) {
     warnings('off')
-
     # Parallel computations are performed for each predictive variable
+    flag = FALSE
     for(k in 1:length(name.x.variable)){
       # Interception of predicted values
       predictor.k <- GetPredictorSubset(name.x.variable[k], idx, nblock,foldername,nr,nc,resolutions,pro,from,to)
       # the mean of value
-      meanx <- meansx[names(meansx)==name.x.variable[k]]
-      # the sd of sdx
-      sdx <- sdsx[names(sdsx)==name.x.variable[k]]
-      # Eliminate the dimensional
-      predictor.k[,1] <- (predictor.k[,1] - meanx)/sdx
-      # The predictive variable is saved
-      if(k==1) {
-        df.all.sub <- predictor.k
-      }else{
-        s <- name.x.variable[k]
-        df.all.sub[s] <- predictor.k[,1]}
+      if(is.data.frame(df))
+      {
+        meanx <- meansx[names(meansx)==name.x.variable[k]]
+        # the sd of sdx
+        sdx <- sdsx[names(sdsx)==name.x.variable[k]]
+        # Eliminate the dimensional
+        predictor.k[,1] <- (predictor.k[,1] - meanx)/sdx
+        # The predictive variable is saved
+        if(flag == FALSE)
+        {
+          flag = TRUE
+          df.all.sub <- predictor.k
+        }
+        else
+        {
+          s <- name.x.variable[k]
+          df.all.sub[s] <- predictor.k[,1]
+        }
+      }
     }
+
     # ====== Start parallel computing operations ======
     # The prediction of parallel computation is made according to the function of training prediction
     if(choicemodel == "QRF"){
@@ -628,9 +671,10 @@ ParallelComputing <- function(outpath,mymodels) {
 
     }else if(choicemodel == "RF"){
       xtest <- df.all.sub[,(names(df.all.sub) %in% name.x.variable)]
-      model.prediction <- predict(rf.variable, newdata=xtest, type="class")
-
-      df.all.sub$variable.quantileall <- exp(model.prediction)
+      # model.prediction <- predict(rf.variable, newdata=xtest, type="class")
+      model.prediction <- predict(rf.variable, newdata=xtest, type = "response")
+      # df.all.sub$variable.quantileall <- exp(model.prediction)
+      df.all.sub$variable.quantileall <- model.prediction
       df.all2 <- as.data.frame(df.all.sub)
       coordinates(df.all2) <- c("x","y")
       gridded(df.all2) <- TRUE
@@ -658,14 +702,18 @@ ParallelComputing <- function(outpath,mymodels) {
 
 
     }else if(choicemodel == "MLR"){
-      xtest <- df.all.sub[,(names(df.all.sub) %in% name.x.variable)]
+      # sfCat(names(df.all.sub), sep = "\n")
+      # sfCat("----------------------------", sep = "\n")
+      # sfCat(name.x.variable, sep = "\n")
+      # ----------------- error here --------------------
+      xtest <- df.all.sub[, (names(df.all.sub) %in% name.x.variable)]
+      # sfCat("run test here", sep = "\n")
       #model.prediction <- predict(mlr.variable, newdata=xtest, interval="none")
-      model.prediction <- predict(mlr.variable, newdata=xtest)
+      model.prediction <- predict(mlr.variable, newdata=xtest, interval="none")
 
 
-
-
-      df.all.sub$variable.quantileall <- exp(model.prediction)
+      # df.all.sub$variable.quantileall <- exp(model.prediction)
+      df.all.sub$variable.quantileall <- model.prediction
       df.all2 <- as.data.frame(df.all.sub)
       coordinates(df.all2) <- c("x","y")
       gridded(df.all2) <- TRUE
@@ -697,7 +745,7 @@ ParallelComputing <- function(outpath,mymodels) {
 
   #===================================================================================
   # Cluster initialization setup kernel
-  snowfall::sfInit(parallel=TRUE,cpus=dsm.env$ncore)
+  snowfall::sfInit(parallel=TRUE,cpus=dsm.env$ncore, slaveOutfile = "C:/Users/tpc/Desktop/rtest/log.txt")
 
   mylibrary <- "
   snowfall::sfLibrary(snowfall)
@@ -721,12 +769,13 @@ ParallelComputing <- function(outpath,mymodels) {
   # Start gets the current system time
   # and saves the run time by doing parallel operations on each partitioned block
   start <- Sys.time()
+  # ---------------------------------
+  #ParallelComputingVariable(1)
   rtest <-  snowfall::sfLapply(1:nblock, ParallelComputingVariable)
   print(Sys.time()-start)
 
   # End parallel returns resources such as memory
   snowfall::sfStop()
-
 
   if(dsm.env$nblock == 1){
     dsm.env$outputnames <- "outputall"
@@ -765,7 +814,6 @@ ParallelComputing <- function(outpath,mymodels) {
       mstrs <- paste(mystr_output,"variable.quantile_mlr_all.tif",sep = "")
       f.suffix <- c(mstrs)
       MergingTiles(dsm.env$df.dem,f.i.d, f.iblock, dsm.env$nblock, f.o.d, f.suffix)
-
     }
 
     if(dsm.env$choicemodel == "RF"){
@@ -776,8 +824,6 @@ ParallelComputing <- function(outpath,mymodels) {
       MergingTiles(dsm.env$df.dem,f.i.d, f.iblock, dsm.env$nblock, f.o.d, f.suffix)
 
     }
-
-
   }
 
 

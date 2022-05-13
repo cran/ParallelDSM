@@ -7,11 +7,14 @@
 smalltesttoy(myflag)
 }
 \arguments{
-\item{myflag}{: The black box tests the successful entry mark}
+\item{myflag}{: Mark the successful installation of the R package}
 }
 \description{
 Black box test function to test whether R package was installed successfully
 }
 \examples{
-smalltesttoy(myflag = "1")
+flag <- ""
+smalltesttoy(flag)
+
+
 }

@@ -14,7 +14,8 @@ A function that checks the parallel computation for missing data
 }
 \examples{
 \donttest{
-InsepectionVariable(myblock = 10)
+iblock = 10
+InsepectionVariable(myblock = iblock)
 }
 
 
