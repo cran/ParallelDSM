@@ -1,4 +1,4 @@
-03c1ef3ca86d09ac1c4490244eaa7737 *DESCRIPTION
+528270bb4097f71418b875de234a3928 *DESCRIPTION
 df08ae3a01600c8dd5a67be2b503abab *NAMESPACE
 907dd6f8b753f65ec0a4f04aa60cd6ad *R/CVfunction.R
 11f91f64840b17e52522611bdc5cec4d *R/GetPredictorSubset.R
@@ -6,13 +6,13 @@ c48e0c6f26596347ad51635d67461b5d *R/InsepectionVariable.R
 45a60ac0efbdc95ea2bba64a023199fc *R/MergingTiles.R
 e8c1d67b32def02a76ab5cc06b97d3d6 *R/ParallelInit.R
 1c8438621082dea17e6a42dd105160cb *R/data.R
-2f334f57b23c71715961833a09b6a174 *R/smalltesttoy.R
-776568a6fc6afac7b8d991050dfb8339 *data/df.dem.RData
+18166e2b5f1f5649706b85e53b195a04 *R/smalltesttoy.R
+59c9cf4fee22706de0d6fa5f56c602ec *data/df.dem.RData
 e4208cd5d9258807615a0df5512b3335 *data/df.input.RData
-4ec1315c8edcc5198e1e43beeaa14a82 *data/df.mrrtf.RData
-a0c742b604dfcdae977df9b5c451ce53 *data/df.plancur.RData
-848409b32bb3a3d7a2a498d21c912d44 *data/df.procur.RData
-e640e4c7d754d10d227fd1a435d55224 *data/df.twi.RData
+e4eb9ff9950c09ec0bc30efa65e5a1c8 *data/df.mrrtf.RData
+5699979497d22461fb42542d002c8c19 *data/df.plancur.RData
+3adb30c8e24d8dd45134bd03c4ddb752 *data/df.procur.RData
+15c58cc81f589fcd5c18f4706f9062ef *data/df.twi.RData
 276cbbb525688e92db5b3b7b8e3b4e07 *inst/extdata/all.input.csv
 6c339c387d77847d19ede8acad9b7841 *inst/extdata/covariate/dem.tif
 971026dcdd0cedd26b25260c825dd058 *inst/extdata/covariate/mrrtf.tif

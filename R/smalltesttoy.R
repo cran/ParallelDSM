@@ -14,7 +14,7 @@
 #'
 smalltesttoy <- function(myflag){
   if(!is.null(myflag)){
-    print("* * * *R package has been installed successfully, through the black box testing, welcome to use the R package: DSMParallelComputing!! * * * *")
+    print("* * * *R package has been installed successfully, through the black box testing, welcome to use the R package: ParallelDSM!! * * * *")
   }else{
     print("* * * *Input error or black box test fails, please retest or check whether the package is installed successfully!!* * * *")
   }
