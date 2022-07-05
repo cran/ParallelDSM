@@ -97,6 +97,7 @@ dsm.env$rf.variable <- NULL
 dsm.env$mlr.variable <- NULL
 dsm.env$outputnames <- NULL
 dsm.env$choicemodel <- "QRF"
+
 ParallelInit <- function(Fpath="",fn="",dsmformula="",nblock=6,ncore=2,Fc=1){
 
   dsm.env$dsmformulas <- dsmformula
@@ -544,9 +545,9 @@ ParallelComputing <- function(outpath,mymodels) {
   to <- NULL
   # Load the required functions
   DataProcess(mymodel = mymodels)
+
   dsm.env$choicemodel <- mymodels
   dsm.env$outputnames <- outpath
-
 
   # Read / write between GDAL grid mapping and spatial objects
   # description :
@@ -598,7 +599,7 @@ ParallelComputing <- function(outpath,mymodels) {
       # Interception of predicted values
       predictor.k <- GetPredictorSubset(name.x.variable[k], idx, nblock,foldername,nr,nc,resolutions,pro,from,to)
       # the mean of value
-      if(is.data.frame(df))
+      if(is.data.frame(predictor.k))
       {
         meanx <- meansx[names(meansx)==name.x.variable[k]]
         # the sd of sdx
@@ -618,7 +619,6 @@ ParallelComputing <- function(outpath,mymodels) {
         }
       }
     }
-
     # ====== Start parallel computing operations ======
     # The prediction of parallel computation is made according to the function of training prediction
     if(choicemodel == "QRF"){
@@ -671,9 +671,7 @@ ParallelComputing <- function(outpath,mymodels) {
 
     }else if(choicemodel == "RF"){
       xtest <- df.all.sub[,(names(df.all.sub) %in% name.x.variable)]
-      # model.prediction <- predict(rf.variable, newdata=xtest, type="class")
       model.prediction <- predict(rf.variable, newdata=xtest, type = "response")
-      # df.all.sub$variable.quantileall <- exp(model.prediction)
       df.all.sub$variable.quantileall <- model.prediction
       df.all2 <- as.data.frame(df.all.sub)
       coordinates(df.all2) <- c("x","y")
@@ -702,20 +700,16 @@ ParallelComputing <- function(outpath,mymodels) {
 
 
     }else if(choicemodel == "MLR"){
-      # sfCat(names(df.all.sub), sep = "\n")
-      # sfCat("----------------------------", sep = "\n")
-      # sfCat(name.x.variable, sep = "\n")
       # ----------------- error here --------------------
       xtest <- df.all.sub[, (names(df.all.sub) %in% name.x.variable)]
-      # sfCat("run test here", sep = "\n")
-      #model.prediction <- predict(mlr.variable, newdata=xtest, interval="none")
       model.prediction <- predict(mlr.variable, newdata=xtest, interval="none")
-
 
       # df.all.sub$variable.quantileall <- exp(model.prediction)
       df.all.sub$variable.quantileall <- model.prediction
       df.all2 <- as.data.frame(df.all.sub)
+
       coordinates(df.all2) <- c("x","y")
+
       gridded(df.all2) <- TRUE
 
       #output the idx_th block's predictions
@@ -745,7 +739,7 @@ ParallelComputing <- function(outpath,mymodels) {
 
   #===================================================================================
   # Cluster initialization setup kernel
-  snowfall::sfInit(parallel=TRUE,cpus=dsm.env$ncore, slaveOutfile = "C:/Users/tpc/Desktop/rtest/log.txt")
+  snowfall::sfInit(parallel=TRUE,cpus=dsm.env$ncore, slaveOutfile = "D:\\log.txt")
 
   mylibrary <- "
   snowfall::sfLibrary(snowfall)
@@ -766,11 +760,12 @@ ParallelComputing <- function(outpath,mymodels) {
                      "df.all.sub", "df.input", "meansx", "sdsx", "qrf.variable","rf.variable","mlr.variable","choicemodel","foldername","xtrain","df.nameVariable",
                      "ids","max.change","name_variable","numColumn","ytrain","from","to")
 
+  snowfall::sfExport("GetPredictorSubset")
+
   # Start gets the current system time
   # and saves the run time by doing parallel operations on each partitioned block
   start <- Sys.time()
   # ---------------------------------
-  #ParallelComputingVariable(1)
   rtest <-  snowfall::sfLapply(1:nblock, ParallelComputingVariable)
   print(Sys.time()-start)
 
