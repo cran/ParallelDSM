@@ -17,29 +17,21 @@ ParallelInit_Test(
 
 \item{icsv}{: Use df.input from the built-in dataset}
 
+\item{dsmformula}{:Symbolic description of a soil fitting model}
+
 \item{nblock}{: the number of blocks for data cutting}
 
 \item{ncore}{: Computes the CPU's kernel in parallel(fill in according to the computer configuration)}
-
-\item{dsmformula}{: Symbolic description of a soil fitting model}
 }
 \description{
 Data initialization function is the first step to complete parallel training
 }
 \examples{
-#####################################################################
-##  Example code 1                                                 ##
-##  Select your own reading method, as shown below                 ##
-#####################################################################
-mydatas <- system.file("extdata", "all.input.csv", package = "ParallelDSM")
-sampledatas <- system.file("extdata", "covariate", package = "ParallelDSM")
-ParallelInit(mydatas,sampledatas,"socd030 ~ twi + dem + pa")
-
-#####################################################################
-##  Example code 2 (It is highly recommended)                      ##
-##  If you want to use test cases, load the relevant data sets     ##
-##  Select the data set that comes with this package
-
+############################################################################
+## Example code                                                           ##
+## If you want to use test cases, load the relevant data sets             ##
+## Select the data set that comes with this package                       ##
+############################################################################
 library(ParallelDSM)
 data("df.input",package = "ParallelDSM")
 data("df.dem",package = "ParallelDSM")
@@ -48,15 +40,15 @@ sampledata <- system.file("extdata", "covariate", package = "ParallelDSM")
 ParallelInit_Test(sampledata,df.input,dsmformula = "socd030 ~ twi + dem")
 #ParallelComputing(outpath = "qrfOutput",mymodels = "QRF")
 
-#####################################################################
-##  Use the data file references that come with this package       ##
-#####################################################################
-#sampledatas <- system.file("extdata", "covariate", package = "ParallelDSM")
+############################################################################
+##  Use the data file references that come with this package              ##
+############################################################################
+# sampledatas <- system.file("extdata", "covariate", package = "ParallelDSM")
 
-#####################################################################
-## Use ParallelInit functions to process the data that is loaded in##
-#####################################################################
-#ParallelInit_Test(sampledata,df.input,dsmformula = "socd030 ~ dem + twi")
+############################################################################
+## Use ParallelInit_Test functions to process the data that is loaded in  ##
+############################################################################
+# ParallelInit_Test(sampledata,df.input,dsmformula = "socd030 ~ dem + twi")
 
 ############################################################################
 ## This function is the main function that performs parallel computations ##
@@ -65,9 +57,9 @@ ParallelInit_Test(sampledata,df.input,dsmformula = "socd030 ~ twi + dem")
 ## 'QRF' stands for Random Forest Model Prediction Method                 ##
 ## 'RF' stands for Machine Learning Model Prediction Method               ##
 ## 'MLR' stands for Multiple Linear Regression Prediction Model           ##
+## 'from' and 'to' are reserved fields that can be left unused by the user##
 ############################################################################
-
-#ParallelComputing(outpath = "myoutputs",mymodels = "MLR",from=1,to=200)
+# ParallelComputing(outpath = "myoutputs",mymodels = "MLR",from=1,to=200)
 
 
 }

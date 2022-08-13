@@ -1,10 +1,10 @@
-3d94f3636f688094920cf691262568e5 *DESCRIPTION
+14a27f9b3ca215da25a9d6de2d4fc97b *DESCRIPTION
 df08ae3a01600c8dd5a67be2b503abab *NAMESPACE
 907dd6f8b753f65ec0a4f04aa60cd6ad *R/CVfunction.R
-11f91f64840b17e52522611bdc5cec4d *R/GetPredictorSubset.R
-c48e0c6f26596347ad51635d67461b5d *R/InsepectionVariable.R
+7849b41ead0eac0e4c5bf1553b9b4b32 *R/GetPredictorSubset.R
+3a5a0f111ff1ab82154d85e46cdb4fdb *R/InsepectionVariable.R
 45a60ac0efbdc95ea2bba64a023199fc *R/MergingTiles.R
-2399c96c9c10f43674931ff3e62330bb *R/ParallelInit.R
+2f119da3d630bd70269a14f3c1fdab3f *R/ParallelInit.R
 1c8438621082dea17e6a42dd105160cb *R/data.R
 18166e2b5f1f5649706b85e53b195a04 *R/smalltesttoy.R
 59c9cf4fee22706de0d6fa5f56c602ec *data/df.dem.RData
@@ -25,9 +25,9 @@ dd6285be612e02f46785247b008fe88a *inst/extdata/covariate/plancur.tif
 e067db8feba1ba2b827a5cc16f55357d *man/InsepectionVariable.Rd
 9ab175df5ceec7bf9c586cbbe7d93c51 *man/MergingTiles.Rd
 fa6c627a1880b02a50fa30cbf2b8a341 *man/NormalizeData.Rd
-650868a3b5752f6660d4721df67d7ebb *man/ParallelComputing.Rd
-c7e32d9c7373fa77f507fbc062cd8aa2 *man/ParallelInit.Rd
-31a96884f0f82d74efe4e5f94d496a31 *man/ParallelInit_Test.Rd
+9776e59b089e59a30b29d5ddbe8d0a70 *man/ParallelComputing.Rd
+2dd3a3400c027dab12b4cfb7fbaef06c *man/ParallelInit.Rd
+b7feb58e0d7d2aee6ebd05b925c69e2b *man/ParallelInit_Test.Rd
 e5c24e48f3e46f86d3130085af37c846 *man/df.dem.Rd
 7ad03cfe54cdc5e6910e7ffc42a25fba *man/df.input.Rd
 675fa43373128eee4c2e32e6a942a212 *man/df.mrrtf.Rd

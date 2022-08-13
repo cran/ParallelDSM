@@ -58,7 +58,7 @@ InsepectionVariable <- function(myblock){
     myflag <- TRUE
     for(i in 1:length(xnums)){
       for(j in 1:3){
-        if(alldata[xnums[i],j] != alldata[xnums[i],j]){
+        if(alldata[xnums[i],j] != alldata1[xnums[i],j]){
           myflag <- FALSE
         }
       }

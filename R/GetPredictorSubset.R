@@ -1,6 +1,5 @@
 # The GetPredictorSubset function, which is suitable for cutting
 # and integrating spatial data, is a helper function
-
 # to get the a part of predictors: 1/nblock
 # this func will output a df.all with all predictorss values and coordinates (x and y)
 #=======================================================================================
@@ -23,7 +22,7 @@
 #' @importFrom methods as
 #'
 #' @return Parallel calculation of the cut part of the data box data
-#' @export
+#' @export GetPredictorSubset
 #'
 #' @examples
 #' \donttest{
