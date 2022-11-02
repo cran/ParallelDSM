@@ -53,7 +53,7 @@ ParallelComputing(outpath = "mlrOutput" , mymodels = "MLR")
 myinput <- "./all.input.csv"
 # The sample data represents the file name where the data file is stored
 
-# ‘covariate’ is the path name of a file
+# 'covariate' is the path name of a file
 sampledata <- "./covariate" # the directory and filename
 # The third parameter represents the name of the TIF file.
 # nblock is used to partition the tif data into several blocks in the terms of row

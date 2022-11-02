@@ -4,18 +4,21 @@
 \alias{InsepectionVariable}
 \title{A function that checks the parallel computation for missing data}
 \usage{
-InsepectionVariable(myblock)
+InsepectionVariable(model = "MLR", block, outputDirectory)
 }
 \arguments{
-\item{myblock}{: the number of blocks for data cutting}
+\item{model}{: The models were selected, including QRF,RF and MLR.}
+
+\item{block}{: The number of blocks for data cutting.}
+
+\item{outputDirectory}{: The directory of output files.}
 }
 \description{
 A function that checks the parallel computation for missing data
 }
 \examples{
 \donttest{
-iblock = 10
-InsepectionVariable(myblock = iblock)
+InsepectionVariable(model = "MLR", block = 30, outputDirectory = "mlrOutput")
 }
 
 

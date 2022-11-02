@@ -2,7 +2,9 @@
 #=====================================================================================================
 #' @title A function that checks the parallel computation for missing data
 #'
-#' @param myblock  : the number of blocks for data cutting
+#' @param model  : The models were selected, including QRF,RF and MLR.
+#' @param block  : The number of blocks for data cutting.
+#' @param outputDirectory  : The directory of output files.
 #'
 #' @return NULL
 #' @export
@@ -12,66 +14,184 @@
 #'
 #' @examples
 #' \donttest{
-#' iblock = 10
-#' InsepectionVariable(myblock = iblock)
+#' InsepectionVariable(model = "MLR", block = 30, outputDirectory = "mlrOutput")
 #' }
 #'
 #'
 #'
-InsepectionVariable <- function(myblock){
-  if(myblock == 1){
-    print("* Without parallel computing, the data is always intact *")
-    return (-1)
-  }
-  # ====================================================
-  # Stored as a temporary variable
-  name.x.temp <- NULL
-  alldata <- NULL
-  alldata1 <- NULL
-  mylist <- c("05","50","95")
-  for (i in 1 : length(mylist)){
-    # Create the merged data set
-    for(idx in 1 : myblock){
-      myaddress <- paste("output/variable.quantile",mylist[i],"_", idx, ".tif", sep = "")
-      myraster  <- raster(myaddress,header=FALSE)
-      dfraster  <- as(myraster,"SpatialPointsDataFrame")
-      allraster <- data.frame(dfraster)
-      #plot(allraster)
-      name.x.temp <- data.frame(allraster)
-      if(is.null(alldata)){
-        # determines whether the value is null
+InsepectionVariable <- function(model = 'MLR', block, outputDirectory) {
+  InspectFunc <- NULL
+  # MLR method function
+  Inspect_MLR <- function() {
+    name.x.temp <- NULL
+    alldata <- NULL
+    if(block == 1) {
+      print("* Without parallel computing, the data is always intact *")
+      return(-1)
+    }
+
+    for(idx in 1: block) {
+      fileAddress <- paste(outputDirectory, "/variable.quantile_mlr_all_", idx, ".tif", sep = "")
+      fileRaster  <- raster(fileAddress, header=FALSE)
+      dfRaster  <- as(fileRaster,"SpatialPointsDataFrame")
+      allRaster <- data.frame(dfRaster)
+      name.x.temp <- data.frame(allRaster)
+      if(is.null(alldata)) {
         alldata = name.x.temp
-      }else{
+      }else {
         names(alldata) = names(name.x.temp)
         alldata = rbind(alldata,name.x.temp)
       }
     }
-    # Read the total data set
-    myaddress1 <- paste("outputall/variable.quantile",mylist[i],"_all.tif",sep="")
-    alldata1 <- raster(myaddress1,header=FALSE)
-    alldata1 <- as(alldata1,"SpatialPointsDataFrame")
+    myaddress1 <- paste(outputDirectory, "/variable.quantile_mlr_all", ".tif", sep = "")
+    alldata1 <- raster(myaddress1, header = FALSE)
+    alldata1 <- as(alldata1, "SpatialPointsDataFrame")
     alldata1 <- data.frame(alldata1)
-    # ========================= check =========================
+    # ============== check =================
     # Deep random number, loop traversal comparison operation
     mynrows <- nrow(alldata)
-    xnums <-sample(1:mynrows,floor(mynrows * 0.3))
-    myflag <- TRUE
-    for(i in 1:length(xnums)){
-      for(j in 1:3){
-        if(alldata[xnums[i],j] != alldata1[xnums[i],j]){
-          myflag <- FALSE
+    xnums <- sample(1: mynrows, floor(mynrows * 0.3))
+    flag <- TRUE
+    for(i in 1: length(xnums)) {
+      for(j in 1: 3) {
+        if(!is.na(alldata[xnums[i], j] != alldata1[xnums[i], j])) {
+          if(alldata[xnums[i], j] != alldata1[xnums[i], j]) {
+            flag <- FALSE
+          }
+        } else {
+          flag <- FALSE
         }
       }
     }
-    if(myflag){
+
+    if(!flag) {
       print("* Data integrity. *")
-    }else{
+    } else {
       print("* Data is missing. The file path is as follows: *")
-      print(myaddress)
+      print(fileAddress)
       print(myaddress1)
     }
-    # ========================= check =========================
   }
-  # ====================================================
+
+  # RF method function
+  Inspect_RF <- function() {
+    if(block == 1) {
+      print("* Without parallel computing, the data is always intact *")
+      return(-1)
+    }
+    name.x.temp <- NULL
+    alldata <- NULL
+
+    for(idx in 1: block) {
+      fileAddress <- paste(outputDirectory, "/variable.quantile_rf_all", "_", idx, ".tif", sep = "")
+      print(fileAddress)
+      fileRaster  <- raster(fileAddress, header=FALSE)
+      dfRaster  <- as(fileRaster,"SpatialPointsDataFrame")
+      allRaster <- data.frame(dfRaster)
+      name.x.temp <- data.frame(allRaster)
+      if(is.null(alldata)) {
+        alldata = name.x.temp
+      }else {
+        names(alldata) = names(name.x.temp)
+        alldata = rbind(alldata,name.x.temp)
+      }
+    }
+    myaddress1 <- paste(outputDirectory, "/variable.quantile_rf_all", ".tif", sep = "")
+    alldata1 <- raster(myaddress1, header = FALSE)
+    alldata1 <- as(alldata1, "SpatialPointsDataFrame")
+    alldata1 <- data.frame(alldata1)
+    # ============== check =================
+    # Deep random number, loop traversal comparison operation
+    mynrows <- nrow(alldata)
+    xnums <- sample(1: mynrows, floor(mynrows * 0.3))
+    flag <- TRUE
+    for(i in 1: length(xnums)) {
+      for(j in 1: 3) {
+        if(!is.na(alldata[xnums[i], j] != alldata1[xnums[i], j])) {
+          if(alldata[xnums[i], j] != alldata1[xnums[i], j]) {
+            flag <- FALSE
+          }
+        } else {
+          flag <- FALSE
+        }
+      }
+    }
+
+    if(!flag) {
+      print("* Data integrity. *")
+    } else {
+      print("* Data is missing. The file path is as follows: *")
+      print(fileAddress)
+      print(myaddress1)
+    }
+    print('RF')
+    print(block)
+    print(outputDirectory)
+  }
+
+  # QRF method function
+  Inspect_QRF <- function() {
+    if(block == 1) {
+      print("* Without parallel computing, the data is always intact *")
+      return(-1)
+    }
+    print('QRF')
+    # Init Variables
+    name.x.temp <- NULL
+    alldata <- NULL
+    fragList <- c('05', '50', '95')
+    for (i in 1: length(fragList)) {
+      for(idx in 1: block) {
+        fileAddress <- paste(outputDirectory, "/variable.quantile",fragList[i],"_", idx, ".tif", sep = "")
+        print(fileAddress)
+        fileRaster  <- raster(fileAddress, header=FALSE)
+        dfRaster  <- as(fileRaster,"SpatialPointsDataFrame")
+        allRaster <- data.frame(dfRaster)
+        name.x.temp <- data.frame(allRaster)
+        if(is.null(alldata)) {
+          alldata = name.x.temp
+        }else {
+          names(alldata) = names(name.x.temp)
+          alldata = rbind(alldata,name.x.temp)
+        }
+      } # for end
+      # Read the total data set
+      myaddress1 <- paste(outputDirectory, "/variable.quantile", fragList[i], "_all.tif", sep = "")
+      alldata1 <- raster(myaddress1, header = FALSE)
+      alldata1 <- as(alldata1, "SpatialPointsDataFrame")
+      alldata1 <- data.frame(alldata1)
+      # ============== check =================
+      # Deep random number, loop traversal comparison operation
+      mynrows <- nrow(alldata)
+      xnums <- sample(1: mynrows, floor(mynrows * 0.3))
+      flag <- TRUE
+      for(i in 1: length(xnums)) {
+        for(j in 1: 3) {
+          if(!is.na(alldata[xnums[i], j] != alldata1[xnums[i], j])) {
+            if(alldata[xnums[i], j] != alldata1[xnums[i], j]) {
+              flag <- FALSE
+            }
+          } else {
+            flag <- FALSE
+          }
+        }
+      }
+
+      if(!flag) {
+        print("* Data integrity. *")
+      } else {
+        print("* Data is missing. The file path is as follows: *")
+        print(fileAddress)
+        print(myaddress1)
+      }
+    } # for end
+  }
+
+  Inspect_Func <- switch(
+    model,
+    MLR = Inspect_MLR,
+    RF = Inspect_RF,
+    QRF = Inspect_QRF
+  )
+  Inspect_Func()
 }
-#=====================================================================================================

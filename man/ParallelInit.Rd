@@ -64,12 +64,12 @@ ParallelInit(mydatas,sampledatas,"socd030 ~ twi + dem + pa")
 ## This function is the main function that performs parallel computations ##
 ## The outpath field refers to the filename of the data output            ##
 ## The mymodels field has three modes to choose from: QRF,RF and MLR      ##
-## 'QRF' stands for Random Forest Model Prediction Method                 ##
-## 'RF' stands for Machine Learning Model Prediction Method               ##
+## 'QRF' stands for Quantile Regression Forest Model Prediction Method    ##
+## 'RF' stands for Random Forest Model Prediction Method                  ##
 ## 'MLR' stands for Multiple Linear Regression Prediction Model           ##
 ## 'from' and 'to' are reserved fields that can be left unused by the user##
 ############################################################################
-# ParallelComputing(outpath = "myoutputs",mymodels = "MLR",from=1,to=200)
+# ParallelComputing(outpath = "myoutputs", mymodels = "MLR")
 
 }
 \references{

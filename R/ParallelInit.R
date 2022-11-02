@@ -82,9 +82,9 @@ dsm.env$choicemodel <- "QRF"
 #' ## This function is the main function that performs parallel computations ##
 #' ## The outpath field refers to the filename of the data output            ##
 #' ## The mymodels field has three modes to choose from: QRF,RF and MLR      ##
-#' ## ‘QRF’ stands for Quantile Regression Forest Model Prediction Method    ##
-#' ## ‘RF’ stands for Random Forest Model Prediction Method                  ##
-#' ## ‘MLR’ stands for Multiple Linear Regression Prediction Model           ##
+#' ## 'QRF' stands for Quantile Regression Forest Model Prediction Method    ##
+#' ## 'RF' stands for Random Forest Model Prediction Method                  ##
+#' ## 'MLR' stands for Multiple Linear Regression Prediction Model           ##
 #' ## 'from' and 'to' are reserved fields that can be left unused by the user##
 #' ############################################################################
 #' # ParallelComputing(outpath = "myoutputs", mymodels = "MLR")
@@ -270,9 +270,9 @@ ParallelInit <- function(Fpath="",fn="",dsmformula="",nblock=6,ncore=2,Fc=1){
 #' ## This function is the main function that performs parallel computations ##
 #' ## The outpath field refers to the filename of the data output            ##
 #' ## The mymodels field has three modes to choose from: QRF,RF and MLR      ##
-#' ## ‘QRF’ stands for Random Forest Model Prediction Method                 ##
-#' ## ‘RF’ stands for Machine Learning Model Prediction Method               ##
-#' ## ‘MLR’ stands for Multiple Linear Regression Prediction Model           ##
+#' ## 'QRF' stands for Random Forest Model Prediction Method                 ##
+#' ## 'RF' stands for Machine Learning Model Prediction Method               ##
+#' ## 'MLR' stands for Multiple Linear Regression Prediction Model           ##
 #' ## 'from' and 'to' are reserved fields that can be left unused by the user##
 #' ############################################################################
 #' # ParallelComputing(outpath = "myoutputs",mymodels = "MLR",from=1,to=200)
@@ -485,7 +485,7 @@ DataProcess <- function(mymodel) {
 #'myinput <- "./all.input.csv"
 #'# The sample data represents the file name where the data file is stored
 #'
-#'# ‘covariate’ is the path name of a file
+#'# 'covariate' is the path name of a file
 #'sampledata <- "./covariate" # the directory and filename
 #'# The third parameter represents the name of the TIF file.
 #'# nblock is used to partition the tif data into several blocks in the terms of row
