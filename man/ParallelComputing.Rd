@@ -18,9 +18,9 @@ ParallelComputing Functions
 This function is the main function that performs parallel computations
 The outpath field refers to the filename of the data output
 The mymodels field has three modes to choose from: QRF,RF and MLR
-‘QRF’ stands for Quantile Regression Forest Model Prediction Method
-‘RF’ stands for Random Forest Model Prediction Method
-‘MLR’ stands for Multiple Linear Regression Prediction Model
+‘QRF??? stands for Quantile Regression Forest Model Prediction Method
+‘RF??? stands for Random Forest Model Prediction Method
+‘MLR??? stands for Multiple Linear Regression Prediction Model
 }
 \examples{
 \donttest{
@@ -68,7 +68,7 @@ ParallelComputing(outpath = "qrfOutput" , mymodels = "QRF")
 }
 \references{
 {
-Breiman, L. (2001). Random forests. Mach. Learn. 45, 5–32.
+Breiman, L. (2001). Random forests. Mach. Learn. 45, 5???32.
 Meinshausen, N. (2006) "Quantile Regression Forests", Journal of Machine Learning Research 7,
 983-999 http://jmlr.csail.mit.edu/papers/v7/
 }

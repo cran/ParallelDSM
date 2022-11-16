@@ -43,6 +43,7 @@ dsm.env$choicemodel <- "QRF"
 #' @importFrom utils read.csv
 #' @importFrom stats sd
 #' @importFrom raster res
+#' @importFrom raster trim
 #' @importFrom sp proj4string
 #' @import stringr
 #' @import stringr str_split
@@ -90,15 +91,14 @@ dsm.env$choicemodel <- "QRF"
 #' # ParallelComputing(outpath = "myoutputs", mymodels = "MLR")
 #'
 #' @references{
-#' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5–32.
+#' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5???32.
 #' Meinshausen, N. (2006) "Quantile Regression Forests", Journal of Machine Learning Research 7,
 #' 983-999 http://jmlr.csail.mit.edu/papers/v7/
 #' }
 #'
 ParallelInit <- function(Fpath="",fn="",dsmformula="",nblock=6,ncore=2,Fc=1){
 
-  dsm.env$dsmformulas <- dsmformula
-
+  dsm.env$dsmformulas <- trim(dsmformula)
   x <- dsmformula
   formulas <- c(x)
   res1 <- stringr::str_split(formulas, " \\+ ")
@@ -279,7 +279,7 @@ ParallelInit <- function(Fpath="",fn="",dsmformula="",nblock=6,ncore=2,Fc=1){
 #'
 #'
 #' @references{
-#' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5–32.
+#' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5???32.
 #' Meinshausen, N. (2006) "Quantile Regression Forests", Journal of Machine Learning Research 7,
 #' 983-999 http://jmlr.csail.mit.edu/papers/v7/
 #' }
@@ -427,7 +427,8 @@ DataProcess <- function(mymodel) {
       mres.variable <- c(mres.variable,tmps)
     }
     dsm.env$xtrain <- dsm.env$df.input[,(names(dsm.env$df.input) %in% mres.variable)]
-    dsm.env$ytrain <- dsm.env$df.input$ln.variable
+    dsm.env$ytrain <- dsm.env$df.input$ln.variabl
+
     dsm.env$qrf.variable <- quantregForest::quantregForest(x=dsm.env$xtrain, y=dsm.env$ytrain)
     print(dsm.env$qrf.variable)
   }
@@ -442,6 +443,7 @@ DataProcess <- function(mymodel) {
 #' @return NULL
 #' @export ParallelComputing
 #'
+#' @import snowfall
 #' @importFrom raster predict
 #' @importFrom sp coordinates<-
 #' @importFrom sp gridded<-
@@ -450,9 +452,9 @@ DataProcess <- function(mymodel) {
 #' This function is the main function that performs parallel computations
 #' The outpath field refers to the filename of the data output
 #' The mymodels field has three modes to choose from: QRF,RF and MLR
-#' ‘QRF’ stands for Quantile Regression Forest Model Prediction Method
-#' ‘RF’ stands for Random Forest Model Prediction Method
-#' ‘MLR’ stands for Multiple Linear Regression Prediction Model
+#' ‘QRF??? stands for Quantile Regression Forest Model Prediction Method
+#' ‘RF??? stands for Random Forest Model Prediction Method
+#' ‘MLR??? stands for Multiple Linear Regression Prediction Model
 #'
 #' @examples
 #' \donttest{
@@ -498,7 +500,7 @@ DataProcess <- function(mymodel) {
 #'
 #' }
 #' @references{
-#' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5–32.
+#' Breiman, L. (2001). Random forests. Mach. Learn. 45, 5???32.
 #' Meinshausen, N. (2006) "Quantile Regression Forests", Journal of Machine Learning Research 7,
 #' 983-999 http://jmlr.csail.mit.edu/papers/v7/
 #' }
@@ -584,116 +586,117 @@ ParallelComputing <- function(outpath,mymodels) {
     # The prediction of parallel computation is made according to the function of training prediction
     if(choicemodel == "QRF"){
       xtest <- df.all.sub[,(names(df.all.sub) %in% name.x.variable)]
-      model.prediction <- predict(qrf.variable, xtest, what = c(0.05, 0.5, 0.95))
+      if(nrow(xtest) > 0) {
+        model.prediction <- predict(qrf.variable, xtest, what = c(0.05, 0.5, 0.95))
+        # For variables that are not properly distributed, natural logarithm conversion is required,
+        # and the predicted results require exponential function operation
 
-      # For variables that are not properly distributed, natural logarithm conversion is required,
-      # and the predicted results require exponential function operation
-
-      df.all.sub$variable.quantile05 <- exp(model.prediction[,1])
-      df.all.sub$variable.quantile50 <- exp(model.prediction[,2])
-      df.all.sub$variable.quantile95 <- exp(model.prediction[,3])
-
-
-      # Build data box
-      df.all2 <- as.data.frame(df.all.sub)
-      # For the coordinate prediction of DF.ALL2
-      coordinates(df.all2) <- c("x","y")
-      # Grid dF.ALL2 / You can also see if the data is already grid
-      gridded(df.all2) <- TRUE
+        df.all.sub$variable.quantile05 <- exp(model.prediction[,1])
+        df.all.sub$variable.quantile50 <- exp(model.prediction[,2])
+        df.all.sub$variable.quantile95 <- exp(model.prediction[,3])
 
 
-      #output the idx_th block's predictions
-      if(nblock == 1){
-        # Determine if the file exists
-        mydirs <- "outputall"
-        if(!file.exists(mydirs)){
-          dir.create(file.path(mydirs))
+        # Build data box
+        df.all2 <- as.data.frame(df.all.sub)
+        if(nrow(df.all2) > 0) {
+          # For the coordinate prediction of DF.ALL2
+          coordinates(df.all2) <- c("x","y")
+          # Grid dF.ALL2 / You can also see if the data is already grid
+          gridded(df.all2) <- TRUE
+
+          #output the idx_th block's predictions
+          if(nblock == 1){
+            # Determine if the file exists
+            mydirs <- "outputall"
+            if(!file.exists(mydirs)){
+              dir.create(file.path(mydirs))
+            }
+            output.file.name1 <- paste("outputall/variable.quantile05_all.tif", sep = "")
+            output.file.name2 <- paste("outputall/variable.quantile50_all.tif", sep = "")
+            output.file.name3 <- paste("outputall/variable.quantile95_all.tif", sep = "")
+          }else{
+            # Determine if the file exists
+            mydirs1 <- outpath
+            if(!file.exists(mydirs1)){
+              dir.create(file.path(mydirs1))
+            }
+            output.file.name1 <- paste(mydirs1,"/variable.quantile05_", idx, ".tif", sep = "")
+            output.file.name2 <- paste(mydirs1,"/variable.quantile50_", idx, ".tif", sep = "")
+            output.file.name3 <- paste(mydirs1,"/variable.quantile95_", idx, ".tif", sep = "")
+          }
+
+          writeGDAL(   dataset = df.all2["variable.quantile05"],  fname = output.file.name1,
+                       drivername = "GTiff",  type = "Float32" )
+          writeGDAL(   dataset = df.all2["variable.quantile50"],  fname = output.file.name2,
+                       drivername = "GTiff",  type = "Float32" )
+          writeGDAL(   dataset = df.all2["variable.quantile95"],  fname = output.file.name3,
+                       drivername = "GTiff",  type = "Float32" )
         }
-        output.file.name1 <- paste("outputall/variable.quantile05_all.tif", sep = "")
-        output.file.name2 <- paste("outputall/variable.quantile50_all.tif", sep = "")
-        output.file.name3 <- paste("outputall/variable.quantile95_all.tif", sep = "")
-      }else{
-        # Determine if the file exists
-        mydirs1 <- outpath
-        if(!file.exists(mydirs1)){
-          dir.create(file.path(mydirs1))
-        }
-        output.file.name1 <- paste(mydirs1,"/variable.quantile05_", idx, ".tif", sep = "")
-        output.file.name2 <- paste(mydirs1,"/variable.quantile50_", idx, ".tif", sep = "")
-        output.file.name3 <- paste(mydirs1,"/variable.quantile95_", idx, ".tif", sep = "")
       }
-
-      writeGDAL(   dataset = df.all2["variable.quantile05"],  fname = output.file.name1,
-                   drivername = "GTiff",  type = "Float32" )
-      writeGDAL(   dataset = df.all2["variable.quantile50"],  fname = output.file.name2,
-                   drivername = "GTiff",  type = "Float32" )
-      writeGDAL(   dataset = df.all2["variable.quantile95"],  fname = output.file.name3,
-                   drivername = "GTiff",  type = "Float32" )
 
     }else if(choicemodel == "RF"){
       xtest <- df.all.sub[,(names(df.all.sub) %in% name.x.variable)]
       model.prediction <- predict(rf.variable, newdata=xtest, type = "response")
       df.all.sub$variable.quantileall <- model.prediction
+
       df.all2 <- as.data.frame(df.all.sub)
-      coordinates(df.all2) <- c("x","y")
-      gridded(df.all2) <- TRUE
+      if(nrow(df.all2) > 0) {
+        coordinates(df.all2) <- c("x","y")
+        gridded(df.all2) <- TRUE
 
-      #output the idx_th block's predictions
-      if(nblock == 1){
-        # Determine if the file exists
-        mydirs <- "outputall"
-        if(!file.exists(mydirs)){
-          dir.create(file.path(mydirs))
+        #output the idx_th block's predictions
+        if(nblock == 1){
+          # Determine if the file exists
+          mydirs <- "outputall"
+          if(!file.exists(mydirs)){
+            dir.create(file.path(mydirs))
+          }
+          output.file.name <- paste("outputall/variable.quantile_rf_all.tif", sep = "")
+        }else{
+          # Determine if the file exists
+          mydirs1 <- outpath
+          if(!file.exists(mydirs1)){
+            dir.create(file.path(mydirs1))
+          }
+          output.file.name <- paste(mydirs1,"/variable.quantile_rf_all_", idx, ".tif", sep = "")
         }
-        output.file.name <- paste("outputall/variable.quantile_rf_all.tif", sep = "")
-      }else{
-        # Determine if the file exists
-        mydirs1 <- outpath
-        if(!file.exists(mydirs1)){
-          dir.create(file.path(mydirs1))
-        }
-        output.file.name <- paste(mydirs1,"/variable.quantile_rf_all_", idx, ".tif", sep = "")
+
+        writeGDAL(   dataset = df.all2["variable.quantileall"],  fname = output.file.name,
+                     drivername = "GTiff",  type = "Float32" )
       }
-
-      writeGDAL(   dataset = df.all2["variable.quantileall"],  fname = output.file.name,
-                   drivername = "GTiff",  type = "Float32" )
 
     }else if(choicemodel == "MLR"){
       xtest <- df.all.sub[, (names(df.all.sub) %in% name.x.variable)]
       model.prediction <- predict(mlr.variable, newdata=xtest, interval="none")
-
       df.all.sub$variable.quantileall <- model.prediction
       df.all2 <- as.data.frame(df.all.sub)
-
-      coordinates(df.all2) <- c("x","y")
-
-      gridded(df.all2) <- TRUE
-
-      #output the idx_th block's predictions
-      if(nblock == 1){
-        # Determine if the file exists
-        mydirs <- "outputall"
-        if(!file.exists(mydirs)){
-          dir.create(file.path(mydirs))
+      colnames(df.all2) <- colnames(df.all.sub)
+      if(nrow(df.all2) > 0) {
+        coordinates(df.all2) <- c("x","y")
+        gridded(df.all2) <- TRUE
+        if(nblock == 1){
+          # Determine if the file exists
+          mydirs <- "outputall"
+          if(!file.exists(mydirs)){
+            dir.create(file.path(mydirs))
+          }
+          output.file.name <- paste("outputall/variable.quantile_mlr_all.tif", sep = "")
+        }else{
+          # Determine if the file exists
+          mydirs1 <- outpath
+          if(!file.exists(mydirs1)){
+            dir.create(file.path(mydirs1))
+          }
+          output.file.name <- paste(mydirs1,"/variable.quantile_mlr_all_", idx, ".tif", sep = "")
         }
-        output.file.name <- paste("outputall/variable.quantile_mlr_all.tif", sep = "")
-      }else{
-        # Determine if the file exists
-        mydirs1 <- outpath
-        if(!file.exists(mydirs1)){
-          dir.create(file.path(mydirs1))
-        }
-        output.file.name <- paste(mydirs1,"/variable.quantile_mlr_all_", idx, ".tif", sep = "")
+
+        writeGDAL(   dataset = df.all2["variable.quantileall"],  fname = output.file.name,
+                     drivername = "GTiff",  type = "Float32" )
       }
-
-      writeGDAL(   dataset = df.all2["variable.quantileall"],  fname = output.file.name,
-                   drivername = "GTiff",  type = "Float32" )
     }
-
     return (1)
   }
-  #=====================================================================================================
-
+  #===================================================================================
   #===================================================================================
   # Cluster initialization setup kernel
   # slaveOutfile = "D:\\log.txt"
@@ -726,6 +729,7 @@ ParallelComputing <- function(outpath,mymodels) {
 
   # End parallel returns resources such as memory
   snowfall::sfStop()
+
 
   if(dsm.env$nblock == 1){
     dsm.env$outputnames <- "outputall"
@@ -775,7 +779,7 @@ ParallelComputing <- function(outpath,mymodels) {
   }
 
 }
-#=====================================================================================================
+  #===================================================================================
 
 
 

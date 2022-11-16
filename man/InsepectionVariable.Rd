@@ -18,7 +18,7 @@ A function that checks the parallel computation for missing data
 }
 \examples{
 \donttest{
-InsepectionVariable(model = "MLR", block = 30, outputDirectory = "mlrOutput")
+InsepectionVariable(model = "MLR", block = 30, outputDirectory = "MlrOutput")
 }
 
 

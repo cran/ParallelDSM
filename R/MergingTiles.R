@@ -57,19 +57,21 @@ MergingTiles <- function(df_dem, f.i.d, f.iblock, n.block, f.o.d, f.suffix)
       in.file.name <- paste(f.prefix, i, ".tif", sep = "")
 
       #Reading a tile
-      rmap_i <- raster(in.file.name); spdf_i <- as(rmap_i,"SpatialPointsDataFrame")
-      df.i <- as.data.frame(spdf_i)
+      if(file.exists(in.file.name)) {
+        rmap_i <- raster(in.file.name); spdf_i <- as(rmap_i,"SpatialPointsDataFrame")
+        df.i <- as.data.frame(spdf_i)
 
-      #Update the row numbers of from and to
-      if(i==1)  {
-        pixel.from <- 1
-        pixel.to <- nrow(df.i)
-      }  else  if(i>1)  {
-        pixel.from <- pixel.to+1;  pixel.to <- pixel.from+nrow(df.i)-1
+        #Update the row numbers of from and to
+        if(i==1)  {
+          pixel.from <- 1
+          pixel.to <- nrow(df.i)
+        }  else  if(i>1)  {
+          pixel.from <- pixel.to+1;  pixel.to <- pixel.from+nrow(df.i)-1
+        }
+
+        # df.output[ c(pixel.from:pixel.to), 1] <- df.i[,1]
+        df.output[c(pixel.from:pixel.to), 1] <- df.i[, 1]
       }
-
-      # df.output[ c(pixel.from:pixel.to), 1] <- df.i[,1]
-      df.output[c(pixel.from:pixel.to), 1] <- df.i[, 1]
     }
     # df.output <- na.omit(df.output)
     df.output <- as.data.frame(df.output);

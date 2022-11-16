@@ -74,7 +74,7 @@ ParallelInit(mydatas,sampledatas,"socd030 ~ twi + dem + pa")
 }
 \references{
 {
-Breiman, L. (2001). Random forests. Mach. Learn. 45, 5–32.
+Breiman, L. (2001). Random forests. Mach. Learn. 45, 5???32.
 Meinshausen, N. (2006) "Quantile Regression Forests", Journal of Machine Learning Research 7,
 983-999 http://jmlr.csail.mit.edu/papers/v7/
 }
